@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>Battle Car Pro - المطور</title>
+<style>
+    body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
+    canvas { display: block; }
+    
+    /* واجهة اللوبي */
+    #lobby {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: radial-gradient(circle, #2c3e50, #000);
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        color: white; z-index: 100;
+    }
+    #lobby h1 { font-size: 50px; text-shadow: 0 0 20px #3498db; margin-bottom: 20px; }
+    .btn {
+        padding: 15px 40px; font-size: 20px; background: #3498db; color: white;
+        border: none; border-radius: 50px; cursor: pointer; transition: 0.3s;
+    }
+    .btn:hover { background: #2980b9; transform: scale(1.1); }
+
+    /* واجهة المستخدم أثناء اللعب */
+    #hud {
+        position: fixed; top: 20px; left: 20px; color: white; pointer-events: none;
+        display: none;
+    }
+    .stat { margin-bottom: 5px; font-weight: bold; font-size: 18px; }
+
+    #controls-hint {
+        position: fixed; bottom: 20px; left: 20px; color: #aaa; font-size: 14px; display: none;
+    }
+
+    #enterCar {
+        position: fixed; bottom: 120px; right: 30px; padding: 15px 25px;
+        background: #e67e22; color: white; border-radius: 50px; display: none;
+        cursor: pointer; font-weight: bold; border: 2px solid white;
+    }
+</style>
+</head>
+<body>
+
+<div id="lobby">
+    <h1>BATTLE CARS 2026</h1>
+    <button class="btn" onclick="startGame()">ابدأ اللعب 🎮</button>
+    <p style="margin-top:20px">التحكم: WASD للحركة | Space للإطلاق | F للخروج</p>
+</div>
+
+<div id="hud">
+    <div class="stat">النقاط: <span id="score">0</span></div>
+    <div class="stat">المستوى: <span id="lvl">1</span></div>
+    <div class="stat">الصحة: <span id="hp">100%</span></div>
+</div>
+
+<div id="controls-hint">تحرك نحو السيارة الزرقاء لركوبها</div>
+<div id="enterCar" onclick="toggleCar()">ركوب السيارة 🚗 (F)</div>
+
+<canvas id="c"></canvas>
+
+<script>
+const c = document.getElementById("c");
+const ctx = c.getContext("2d");
+const scoreEl = document.getElementById("score");
+const hpEl = document.getElementById("hp");
+const lvlEl = document.getElementById("lvl");
+
+let gameActive = false;
+let score = 0;
+let level = 1;
+
+c.width = window.innerWidth;
+c.height = window.innerHeight;
+
+// الكائنات
+let player = { x: 100, y: 100, size: 20, speed: 4, hp: 100 };
+let car = { x: 400, y: 300, w: 60, h: 35, speed: 8, inCar: false, angle: 0 };
+let bullets = [];
+let enemies = [];
+let particles = [];
+let keys = {};
+
+// تشغيل اللعبة
+function startGame() {
+    document.getElementById("lobby").style.display = "none";
+    document.getElementById("hud").style.display = "block";
+    document.getElementById("controls-hint").style.display = "block";
+    gameActive = true;
+    spawnEnemy();
+}
+
+// التحكم
+window.onkeydown = e => { 
+    keys[e.key.toLowerCase()] = true; 
+    if(e.key.toLowerCase() === 'f') toggleCar(); 
+};
+window.onkeyup = e => keys[e.key.toLowerCase()] = false;
+
+function toggleCar() {
+    let d = Math.hypot(player.x - car.x, player.y - car.y);
+    if (d < 80 && !car.inCar) {
+        car.inCar = true;
+        document.getElementById("enterCar").style.display = "none";
+    } else if (car.inCar) {
+        car.inCar = false;
+        player.x = car.x + 50; // النزول بجانب السيارة
+    }
+}
+
+function spawnEnemy() {
+    if(!gameActive) return;
+    enemies.push({
+        x: Math.random() * c.width,
+        y: Math.random() * c.height,
+        hp: 50,
+        speed: 1.5 + (level * 0.2)
+    });
+    setTimeout(spawnEnemy, 3000 / level);
+}
+
+function createExplosion(x, y, color) {
+    for(let i=0; i<15; i++) {
+        particles.push({
+            x, y, 
+            vx: (Math.random()-0.5)*10, 
+            vy: (Math.random()-0.5)*10, 
+            life: 1, 
+            color
+        });
+    }
+}
+
+function update() {
+    if (!gameActive) return;
+
+    let moveX = 0, moveY = 0;
+    if (keys['w'] || keys['arrowup']) moveY = -1;
+    if (keys['s'] || keys['arrowdown']) moveY = 1;
+    if (keys['a'] || keys['arrowleft']) moveX = -1;
+    if (keys['d'] || keys['arrowright']) moveX = 1;
+
+    if (car.inCar) {
+        car.x += moveX * car.speed;
+        car.y += moveY * car.speed;
+        player.x = car.x;
+        player.y = car.y;
+        if(moveX !== 0 || moveY !== 0) car.angle = Math.atan2(moveY, moveX);
+    } else {
+        player.x += moveX * player.speed;
+        player.y += moveY * player.speed;
+        let d = Math.hypot(player.x - car.x, player.y - car.y);
+        document.getElementById("enterCar").style.display = (d < 80) ? "block" : "none";
+    }
+
+    // إطلاق النار
+    if (keys[' ']) {
+        if (bullets.length < 10) { // تحديد معدل الإطلاق
+            bullets.push({ 
+                x: player.x, 
+                y: player.y, 
+                vx: (moveX || 1) * 10, 
+                vy: moveY * 10,
+                life: 50 
+            });
+            keys[' '] = false; 
+        }
+    }
+
+    // تحديث الرصاص
+    bullets.forEach((b, i) => {
+        b.x += b.vx; b.y += b.vy; b.life--;
+        if (b.life <= 0) bullets.splice(i, 1);
+    });
+
+    // تحديث الأعداء
+    enemies.forEach((en, i) => {
+        let dx = player.x - en.x;
+        let dy = player.y - en.y;
+        let angle = Math.atan2(dy, dx);
+        en.x += Math.cos(angle) * en.speed;
+        en.y += Math.sin(angle) * en.speed;
+
+        // تصادم الرصاص مع الأعداء
+        bullets.forEach((b, bi) => {
+            if (Math.hypot(b.x - en.x, b.y - en.y) < 20) {
+                en.hp -= 25;
+                bullets.splice(bi, 1);
+                if (en.hp <= 0) {
+                    createExplosion(en.x, en.y, "#ff4757");
+                    enemies.splice(i, 1);
+                    score += 10;
+                    if(score % 50 === 0) level++;
+                }
+            }
+        });
+
+        // تصادم العدو مع اللاعب
+        if (Math.hypot(player.x - en.x, player.y - en.y) < 25) {
+            player.hp -= 0.5;
+            if(player.hp <= 0) location.reload();
+        }
+    });
+
+    // جزيئات الانفجار
+    particles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+        if(p.life <= 0) particles.splice(i, 1);
+    });
+
+    // تحديث الواجهة
+    scoreEl.innerText = score;
+    lvlEl.innerText = level;
+    hpEl.innerText = Math.ceil(player.hp) + "%";
+}
+
+function draw() {
+    ctx.fillStyle = "#1e272e"; // أرضية غامقة احترافية
+    ctx.fillRect(0, 0, c.width, c.height);
+
+    // رسم الشبكة (Grid) لإعطاء شعور بالحركة
+    ctx.strokeStyle = "#2f3640";
+    for(let i=0; i<c.width; i+=50) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,c.height); ctx.stroke(); }
+    for(let i=0; i<c.height; i+=50) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(c.width,i); ctx.stroke(); }
+
+    // رسم السيارة
+    ctx.save();
+    ctx.translate(car.x, car.y);
+    if(car.inCar) ctx.rotate(car.angle);
+    ctx.fillStyle = "#3498db";
+    ctx.shadowBlur = 15; ctx.shadowColor = "#3498db";
+    ctx.fillRect(-car.w/2, -car.h/2, car.w, car.h);
+    // نوافذ السيارة
+    ctx.fillStyle = "#dff9fb";
+    ctx.fillRect(5, -car.h/2 + 5, 10, car.h - 10);
+    ctx.restore();
+
+    // رسم اللاعب (إذا لم يكن في السيارة)
+    if (!car.inCar) {
+        ctx.fillStyle = "#f1c40f";
+        ctx.shadowBlur = 10; ctx.shadowColor = "yellow";
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.size/2, 0, Math.PI*2);
+        ctx.fill();
+    }
+
+    // رسم الأعداء
+    enemies.forEach(en => {
+        ctx.fillStyle = "#ff4757";
+        ctx.shadowBlur = 10; ctx.shadowColor = "red";
+        ctx.fillRect(en.x - 15, en.y - 15, 30, 30);
+    });
+
+    // رسم الرصاص
+    bullets.forEach(b => {
+        ctx.fillStyle = "#2ecc71";
+        ctx.shadowBlur = 5;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, 4, 0, Math.PI*2);
+        ctx.fill();
+    });
+
+    // رسم الجزيئات
+    particles.forEach(p => {
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, 3, 3);
+    });
+    ctx.globalAlpha = 1;
+
+    update();
+    requestAnimationFrame(draw);
+}
+
+draw();
+
+// إعادة ضبط الحجم
+window.onresize = () => {
+    c.width = innerWidth;
+    c.height = innerHeight;
+};
+</script>
+</body>
+</html>
