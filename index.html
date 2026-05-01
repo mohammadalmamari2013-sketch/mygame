@@ -3,56 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BATTLE PRO - REDEEM CENTER</title>
+    <title>BATTLE PRO MAX - REBORN</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        :root { --gold: #f1c40f; --neon: #00f3ff; }
-        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; touch-action: none; color: white; }
+        :root { --gold: #f1c40f; --neon: #00f3ff; --red: #ff4757; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; color: white; user-select: none; }
         
-        /* واجهة اللوبي */
+        /* واجهة اللوبي الرئيسية */
         #lobby-ui { position: fixed; width: 100%; height: 100%; background: radial-gradient(circle at center, transparent, #000); z-index: 10; display: flex; flex-direction: column; justify-content: space-between; }
-        .top-bar { display: flex; justify-content: flex-end; gap: 15px; padding: 15px; }
-        .currency { background: rgba(0,0,0,0.8); padding: 5px 15px; border-radius: 20px; border: 1px solid var(--gold); color: var(--gold); font-weight: bold; }
+        .top-bar { display: flex; justify-content: flex-end; gap: 10px; padding: 10px; }
+        .currency { background: rgba(0,0,0,0.8); padding: 5px 12px; border-radius: 15px; border: 1px solid var(--gold); color: var(--gold); font-weight: bold; font-size: 14px; }
         
-        /* الأزرار الجانبية */
-        .side-menu { position: absolute; left: 15px; top: 100px; display: flex; flex-direction: column; gap: 10px; }
-        .btn-side { width: 65px; height: 65px; background: rgba(0,0,0,0.7); border: 2px solid white; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-direction: column; font-size: 10px; cursor: pointer; text-align: center; }
+        /* القائمة الجانبية - ثابتة لا تختفي */
+        .side-menu { position: absolute; left: 10px; top: 80px; display: flex; flex-direction: column; gap: 10px; z-index: 15; }
+        .btn-side { width: 60px; height: 60px; background: rgba(20,20,40,0.9); border: 2px solid white; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-direction: column; font-size: 10px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
 
-        /* نافذة شحن الأكواد (مجنونة) */
-        #redeem-win { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; height: 60%; background: linear-gradient(135deg, #1a1a2e, #000); border: 2px solid var(--neon); z-index: 100; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 0 30px var(--neon); }
-        #code-input { width: 80%; padding: 15px; margin: 20px 0; border-radius: 5px; border: 1px solid var(--neon); background: #000; color: white; text-align: center; font-size: 20px; letter-spacing: 5px; }
-        .redeem-btn { background: var(--neon); color: black; border: none; padding: 15px 40px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 18px; }
+        /* النوافذ (خزنة، عجلة، شحن) */
+        .win { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; height: 70%; background: #1a1a2e; border: 3px solid var(--gold); z-index: 100; border-radius: 15px; padding: 15px; text-align: center; overflow-y: auto; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .card { background: #0f0f1e; border: 1px solid #444; padding: 10px; border-radius: 8px; }
+        .action-btn { background: var(--gold); color: black; border: none; padding: 10px; border-radius: 5px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 5px; }
 
-        /* واجهة الجيم */
+        /* واجهة اللعب */
         #game-ui { display: none; position: fixed; width: 100%; height: 100%; z-index: 20; pointer-events: none; }
-        #joystick { position: absolute; left: 40px; bottom: 40px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; border: 2px solid white; pointer-events: auto; }
-        #stick { position: absolute; left: 35px; top: 35px; width: 50px; height: 50px; background: white; border-radius: 50%; }
-        #fire-btn { position: absolute; right: 40px; bottom: 80px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border: 4px solid white; border-radius: 50%; pointer-events: auto; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+        #joystick { position: absolute; left: 30px; bottom: 30px; width: 110px; height: 110px; background: rgba(255,255,255,0.1); border-radius: 50%; border: 2px solid white; pointer-events: auto; }
+        #stick { position: absolute; left: 35px; top: 35px; width: 40px; height: 40px; background: white; border-radius: 50%; }
+        #fire-btn { position: absolute; right: 30px; bottom: 70px; width: 90px; height: 90px; background: rgba(255,255,255,0.1); border: 4px solid white; border-radius: 50%; pointer-events: auto; display: flex; align-items: center; justify-content: center; font-size: 35px; }
 
-        .start-btn { width: 260px; height: 75px; background: var(--gold); color: black; font-size: 28px; font-weight: bold; border: none; margin: 0 auto 30px; cursor: pointer; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); }
+        .start-btn { width: 240px; height: 70px; background: var(--gold); color: black; font-size: 26px; font-weight: bold; border: none; margin: 0 auto 30px; cursor: pointer; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); }
     </style>
 </head>
 <body>
 
 <div id="lobby-ui">
     <div class="top-bar">
-        <div class="currency">💎 <span id="gems-val">101</span></div>
-        <div class="currency">💰 <span id="coins-val">51282</span></div>
+        <div class="currency">💎 <span id="gems-txt">999</span></div>
+        <div class="currency">💰 <span id="coins-txt">50000</span></div>
     </div>
+    
     <div class="side-menu">
-        <div class="btn-side" onclick="toggleWin('redeem-win')">🎁<br>شحن الأكواد</div>
-        <div class="btn-side" onclick="alert('المتجر يفتح غداً!')">🛒<br>المتجر</div>
+        <div class="btn-side" onclick="openWin('vault-win')">📦<br>الخزنة</div>
+        <div class="btn-side" onclick="openWin('luck-win')">🎡<br>العجلة</div>
+        <div class="btn-side" onclick="openWin('redeem-win')">🎁<br>الأكواد</div>
     </div>
+
     <button class="start-btn" onclick="startGame()">START</button>
 </div>
 
-<div id="redeem-win">
-    <h2 style="color:var(--neon)">مركز استبدال الأكواد</h2>
-    <p>ادخل الكود السري لشحن الجواهر مجاناً</p>
-    <input type="text" id="code-input" placeholder="XXXX-XXXX" maxlength="12">
-    <br>
-    <button class="redeem-btn" onclick="redeemNow()">شحن الجواهر 💎</button>
-    <button onclick="toggleWin('redeem-win')" style="display:block; width:100%; margin-top:20px; background:none; color:white; border:none; cursor:pointer;">إغلاق</button>
+<div id="vault-win" class="win">
+    <h2 style="color:var(--neon)">خزنة الملابس</h2>
+    <div class="grid">
+        <div class="card">🧥 سكن النيون <button class="action-btn" onclick="setSkin(0x00f3ff)">لبس</button></div>
+        <div class="card">🔴 سكن النار <button class="action-btn" onclick="setSkin(0xff4757)">لبس</button></div>
+        <div class="card">🕺 رقصة 1 <button class="action-btn" onclick="playEmote()">رقص</button></div>
+    </div>
+    <button onclick="closeWins()" style="margin-top:20px; background:none; border:none; color:white;">إغلاق</button>
+</div>
+
+<div id="luck-win" class="win">
+    <h2 style="color:var(--gold)">عجلة الحظ</h2>
+    <div style="font-size:60px; margin:20px">🎡</div>
+    <button class="action-btn" style="height:60px" onclick="spin()">احرق 50 جوهرة 🔥</button>
+    <button onclick="closeWins()" style="margin-top:20px; background:none; border:none; color:white;">إغلاق</button>
+</div>
+
+<div id="redeem-win" class="win">
+    <h2 style="color:var(--neon)">شحن الأكواد</h2>
+    <input type="text" id="code-in" placeholder="ادخل الكود هنا" style="width:80%; padding:10px; margin:15px 0; background:#000; color:white; border:1px solid var(--neon)">
+    <button class="action-btn" onclick="redeem()">شحن الآن 💎</button>
+    <button onclick="closeWins()" style="margin-top:20px; background:none; border:none; color:white;">إغلاق</button>
 </div>
 
 <div id="game-ui">
@@ -61,114 +80,87 @@
 </div>
 
 <script>
-    let gems = 101;
-    let coins = 51282;
-    let inGame = false;
+    let gems = 999, coins = 50000, inGame = false;
     let moveDir = { x: 0, z: 0 };
 
-    // الأكواد المسموح بها (يمكنك إضافة المزيد)
-    const validCodes = {
-        "FREE2026": 500,
-        "GIFT-100": 100,
-        "MOHAMMAD": 1000
-    };
-
-    // إعداد المحرك 3D
+    // إعداد المشهد
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x020205);
+    scene.background = new THREE.Color(0x050510);
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 1));
-    const light = new THREE.PointLight(0xffffff, 2);
-    light.position.set(5, 5, 5);
-    scene.add(light);
+    // إضاءة قوية (أساسية لظهور السكن)
+    const amb = new THREE.AmbientLight(0xffffff, 1); scene.add(amb);
+    const point = new THREE.PointLight(0xffffff, 2); point.position.set(5,5,5); scene.add(point);
 
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshPhongMaterial({color: 0x111111}));
-    floor.rotation.x = -Math.PI / 2;
-    scene.add(floor);
-
-    // إضافة 300 غرض
-    for(let i=0; i<300; i++){
-        const x = Math.random()*600-300;
-        const z = Math.random()*600-300;
-        const h = Math.random()*4+1;
-        const box = new THREE.Mesh(new THREE.BoxGeometry(1, h, 1), new THREE.MeshPhongMaterial({color: Math.random()*0xffffff}));
-        box.position.set(x, h/2, z);
-        scene.add(box);
-    }
-
-    // الشخصية
-    const playerGroup = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.5, 1, 4, 8), new THREE.MeshPhongMaterial({color: 0x00ff00}));
+    // السكن (اللاعب)
+    const player = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.5, 1, 4, 8), new THREE.MeshPhongMaterial({color: 0x00f3ff}));
     body.position.y = 1;
-    playerGroup.add(body);
-    scene.add(playerGroup);
+    player.add(body);
+    scene.add(player);
+
+    // الأرضية و 300 غرض
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshPhongMaterial({color: 0x111122}));
+    floor.rotation.x = -Math.PI / 2; scene.add(floor);
+
+    for(let i=0; i<300; i++) {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(1.5, Math.random()*5, 1.5), new THREE.MeshPhongMaterial({color: Math.random()*0xffffff}));
+        m.position.set(Math.random()*600-300, 1, Math.random()*600-300);
+        scene.add(m);
+    }
 
     camera.position.set(0, 5, 10);
 
-    function toggleWin(id) {
-        const w = document.getElementById(id);
-        w.style.display = w.style.display === 'block' ? 'none' : 'block';
+    // وظائف الواجهات
+    function openWin(id) { closeWins(); document.getElementById(id).style.display = 'block'; }
+    function closeWins() { document.querySelectorAll('.win').forEach(w => w.style.display = 'none'); }
+    
+    function setSkin(col) { body.material.color.setHex(col); alert("تم تغيير السكن!"); }
+    
+    function spin() {
+        if(gems >= 50) { gems -= 50; updateUI(); setSkin(Math.random()*0xffffff); alert("مبروك سكن جديد!"); }
+        else alert("جواهرك لا تكفي!");
     }
 
-    function redeemNow() {
-        const code = document.getElementById('code-input').value.toUpperCase();
-        if (validCodes[code]) {
-            const amount = validCodes[code];
-            gems += amount;
-            updateUI();
-            alert(`🎉 مبروك! تم شحن ${amount} جوهرة بنجاح!`);
-            document.getElementById('code-input').value = "";
-            toggleWin('redeem-win');
-        } else {
-            alert("❌ الكود غير صحيح أو منتهي الصلاحية!");
-        }
+    function redeem() {
+        const c = document.getElementById('code-in').value.toUpperCase();
+        if(c === "MOHAMMAD") { gems += 1000; updateUI(); alert("تم شحن 1000 جوهرة! 💎"); }
+        else alert("كود خطأ!");
     }
 
-    function updateUI() {
-        document.getElementById('gems-val').innerText = gems;
-        document.getElementById('coins-val').innerText = coins;
+    function updateUI() { document.getElementById('gems-txt').innerText = gems; document.getElementById('coins-txt').innerText = coins; }
+
+    function startGame() { 
+        document.getElementById('lobby-ui').style.display = 'none'; 
+        document.getElementById('game-ui').style.display = 'block'; 
+        inGame = true; 
     }
 
-    function startGame() {
-        document.getElementById('lobby-ui').style.display = 'none';
-        document.getElementById('game-ui').style.display = 'block';
-        inGame = true;
-    }
-
-    // التحكم
-    const joystick = document.getElementById('joystick');
-    const stick = document.getElementById('stick');
-    joystick.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        const t = e.touches[0];
-        const r = joystick.getBoundingClientRect();
-        const dx = t.clientX - (r.left + 60);
-        const dz = t.clientY - (r.top + 60);
+    // الحركة (الجويستيك)
+    const joy = document.getElementById('joystick');
+    const stk = document.getElementById('stick');
+    joy.addEventListener('touchmove', (e) => {
+        const t = e.touches[0]; const r = joy.getBoundingClientRect();
+        const dx = t.clientX - (r.left + 55), dz = t.clientY - (r.top + 55);
         const d = Math.min(Math.sqrt(dx*dx + dz*dz), 40);
-        const angle = Math.atan2(dz, dx);
-        stick.style.transform = `translate(${Math.cos(angle)*d}px, ${Math.sin(angle)*d}px)`;
-        moveDir.x = Math.cos(angle) * (d/40);
-        moveDir.z = Math.sin(angle) * (d/40);
+        const a = Math.atan2(dz, dx);
+        stk.style.transform = `translate(${Math.cos(a)*d}px, ${Math.sin(a)*d}px)`;
+        moveDir = { x: Math.cos(a)*(d/40), z: Math.sin(a)*(d/40) };
     });
-    joystick.addEventListener('touchend', () => {
-        stick.style.transform = `translate(0,0)`;
-        moveDir = { x: 0, z: 0 };
-    });
+    joy.addEventListener('touchend', () => { stk.style.transform = `translate(0,0)`; moveDir = {x:0, z:0}; });
 
     function animate() {
         requestAnimationFrame(animate);
-        if (inGame) {
-            playerGroup.position.x += moveDir.x * 0.3;
-            playerGroup.position.z += moveDir.z * 0.3;
-            camera.position.lerp(new THREE.Vector3(playerGroup.position.x, 6, playerGroup.position.z + 10), 0.1);
-            camera.lookAt(playerGroup.position);
+        if(inGame) {
+            player.position.x += moveDir.x * 0.35;
+            player.position.z += moveDir.z * 0.35;
+            camera.position.lerp(new THREE.Vector3(player.position.x, 6, player.position.z + 10), 0.1);
+            camera.lookAt(player.position);
         } else {
-            playerGroup.rotation.y += 0.01;
-            camera.lookAt(playerGroup.position);
+            player.rotation.y += 0.01; camera.lookAt(player.position);
         }
         renderer.render(scene, camera);
     }
