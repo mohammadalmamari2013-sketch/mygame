@@ -3,189 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BATTLE PRO MAX - MOBILE</title>
+    <title>BATTLE PRO ULTRA</title>
     <style>
-        :root { --gold: #f1c40f; --blue: #3498db; --red: #e74c3c; }
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Arial', sans-serif; color: white; touch-action: none; }
+        :root { --neon-blue: #00f3ff; --neon-pink: #ff00ff; --gold: #f1c40f; }
+        body { margin: 0; overflow: hidden; background: #050505; font-family: 'Orbitron', sans-serif; color: white; touch-action: none; }
         
-        /* شاشة اللوبي */
+        /* اللوبي الأسطوري */
         #lobby {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
+            background: radial-gradient(circle at center, #1a1a2e 0%, #000 100%);
             display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100;
         }
 
-        /* الشخصية 3D في اللوبي */
-        .preview-char {
-            width: 80px; height: 120px; background: var(--blue);
-            border: 3px solid #fff; box-shadow: 0 0 30px var(--blue);
-            animation: rotateChar 3s infinite linear; margin-bottom: 30px;
+        /* تأثير الشخصية المتطورة */
+        .char-3d {
+            width: 100px; height: 150px; background: linear-gradient(var(--neon-blue), #0057ff);
+            border-radius: 10px; position: relative; transform-style: preserve-3d;
+            box-shadow: 0 0 50px var(--neon-blue); animation: float 3s infinite ease-in-out;
         }
-        @keyframes rotateChar {
-            0% { transform: rotateY(0deg); }
-            100% { transform: rotateY(360deg); }
-        }
+        @keyframes float { 0%, 100% { transform: translateY(0) rotateY(0deg); } 50% { transform: translateY(-20px) rotateY(180deg); } }
 
-        /* القائمة الجانبية */
-        .side-menu { position: absolute; right: 10px; top: 20%; display: flex; flex-direction: column; gap: 10px; }
-        .menu-btn { background: rgba(0,0,0,0.7); border: 2px solid var(--gold); padding: 12px; border-radius: 10px; font-size: 14px; color: #fff; text-align: center; }
-
-        /* عجلة الحظ */
-        #wheel-container {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 200; text-align: center;
+        /* الأزرار الاحترافية */
+        .ui-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--neon-blue);
+            color: var(--neon-blue); padding: 12px 25px; border-radius: 5px;
+            text-transform: uppercase; letter-spacing: 2px; transition: 0.3s;
         }
-        #wheel {
-            width: 260px; height: 260px; border-radius: 50%; border: 8px solid var(--gold);
-            background: conic-gradient(#ff1f1f 0deg 60deg, #1f75ff 60deg 120deg, #1fff57 120deg 180deg, #f3ff1f 180deg 240deg, #ff1ff3 240deg 300deg, #1ffff3 300deg 360deg);
-            transition: transform 3s cubic-bezier(0.1, 0, 0.1, 1);
-        }
-
         #start-btn {
-            background: var(--gold); color: #000; padding: 15px 50px;
-            font-size: 22px; border: none; border-radius: 50px; font-weight: bold;
-            box-shadow: 0 0 20px var(--gold); cursor: pointer;
+            margin-top: 50px; padding: 20px 80px; font-size: 24px;
+            background: var(--neon-blue); color: #000; font-weight: bold;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); border: none;
         }
 
-        /* واجهة اللعبة */
+        /* واجهة اللعب */
         #game-ui { display: none; }
-        #joy-bg { position: fixed; left: 40px; bottom: 40px; width: 110px; height: 110px; background: rgba(255,255,255,0.1); border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); }
-        #joy-thumb { position: absolute; left: 30px; top: 30px; width: 50px; height: 50px; background: #fff; border-radius: 50%; }
-        #fire-btn { position: fixed; right: 40px; bottom: 50px; width: 90px; height: 90px; background: var(--red); border-radius: 50%; border: 5px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 40px; }
-
-        #hp-bar { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); width: 200px; height: 15px; background: #333; border: 2px solid #fff; }
-        #hp-fill { width: 100%; height: 100%; background: var(--red); transition: 0.2s; }
+        #joy-bg { position: fixed; left: 50px; bottom: 50px; width: 130px; height: 130px; background: rgba(255,255,255,0.05); border: 2px solid var(--neon-blue); border-radius: 50%; }
+        #joy-thumb { position: absolute; left: 40px; top: 40px; width: 50px; height: 50px; background: var(--neon-blue); border-radius: 50%; box-shadow: 0 0 20px var(--neon-blue); }
+        #fire-btn { position: fixed; right: 50px; bottom: 50px; width: 100px; height: 100px; background: var(--neon-pink); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; border: 4px solid #fff; box-shadow: 0 0 30px var(--neon-pink); }
+        
+        .health-container { position: fixed; top: 20px; width: 80%; left: 10%; height: 10px; background: #222; border-radius: 5px; }
+        #hp-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #ff0000, #ff5555); border-radius: 5px; transition: 0.3s; }
     </style>
 </head>
 <body>
 
 <div id="lobby">
-    <div style="position: absolute; top: 20px; left: 20px; font-size: 20px;">💎 جواهر: <span id="gemCount">100</span></div>
-    
-    <div class="side-menu">
-        <div class="menu-btn" onclick="showWheel()">🎡 عجلة الحظ</div>
-        <div class="menu-btn" onclick="alert('المتجر يفتح قريباً!')">🛒 المتجر</div>
-    </div>
-
-    <div class="preview-char"></div>
-    <h1 style="margin-bottom: 40px; text-shadow: 0 0 10px #fff;">BATTLE PRO</h1>
-    <button id="start-btn" onclick="initGame()">ابدأ اللعب 🔥</button>
-</div>
-
-<div id="wheel-container">
-    <div id="wheel"></div>
-    <button class="menu-btn" style="margin-top:20px; width:100%" onclick="spinWheel()">اضغط للتدوير! 🌀</button>
+    <div style="position: absolute; top: 30px; right: 30px; color: var(--gold); font-size: 24px;">💎 <span id="gems">500</span></div>
+    <div class="char-3d"></div>
+    <h1 style="letter-spacing: 10px; margin: 20px 0;">BATTLE PRO</h1>
+    <p style="color: #666;">نسخة المطور - v2.0</p>
+    <button id="start-btn" onclick="start()">START GAME</button>
 </div>
 
 <div id="game-ui">
-    <div id="hp-bar"><div id="hp-fill"></div></div>
+    <div class="health-container"><div id="hp-bar"></div></div>
     <div id="joy-bg"><div id="joy-thumb"></div></div>
     <div id="fire-btn">🔫</div>
 </div>
 
-<canvas id="gameCanvas"></canvas>
+<canvas id="canvas"></canvas>
 
 <script>
-    const canvas = document.getElementById("gameCanvas");
+    const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
-    let gameState = "LOBBY";
-    let player = { x: 1000, y: 1000, hp: 100, gems: 100 };
+    let playing = false;
+    let player = { x: 1000, y: 1000, hp: 100 };
     let enemies = [];
     let bullets = [];
-    let move = { x: 0, y: 0, active: false };
+    let joy = { x: 0, y: 0, active: false };
 
-    // تدوير عجلة الحظ
-    function showWheel() { document.getElementById("wheel-container").style.display = "block"; }
-    function spinWheel() {
-        const wheel = document.getElementById("wheel");
-        const randDeg = Math.floor(Math.random() * 3000) + 720;
-        wheel.style.transform = `rotate(${randDeg}deg)`;
-        setTimeout(() => {
-            player.gems += 50;
-            document.getElementById("gemCount").innerText = player.gems;
-            alert("مبروك! ربحت 50 جوهرة 💎");
-            document.getElementById("wheel-container").style.display = "none";
-        }, 3200);
-    }
-
-    function initGame() {
+    function start() {
         document.getElementById("lobby").style.display = "none";
         document.getElementById("game-ui").style.display = "block";
-        gameState = "PLAYING";
-        for(let i=0; i<15; i++) enemies.push({x: Math.random()*2000, y: Math.random()*2000});
-        update();
+        playing = true;
+        for(let i=0; i<20; i++) enemies.push({x: Math.random()*3000, y: Math.random()*3000, id: Math.random()});
+        loop();
     }
 
-    // نظام تحكم الجوال (الجويستيك)
+    // نظام اللمس المتطور
     window.addEventListener("touchstart", (e) => {
-        if(e.touches[0].clientX < window.innerWidth/2) move.active = true;
+        if(e.touches[0].clientX < window.innerWidth/2) joy.active = true;
     });
-
     window.addEventListener("touchmove", (e) => {
-        if(!move.active) return;
-        const t = e.touches[0];
-        const rect = document.getElementById("joy-bg").getBoundingClientRect();
-        let dx = t.clientX - (rect.left + 55);
-        let dy = t.clientY - (rect.top + 55);
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        if(dist > 40) { dx *= 40/dist; dy *= 40/dist; }
-        move.x = dx / 8;
-        move.y = dy / 8;
+        if(!joy.active) return;
+        let t = e.touches[0];
+        let r = document.getElementById("joy-bg").getBoundingClientRect();
+        let dx = t.clientX - (r.left + 65);
+        let dy = t.clientY - (r.top + 65);
+        let d = Math.sqrt(dx*dx + dy*dy);
+        if(d > 50) { dx *= 50/d; dy *= 50/d; }
+        joy.x = dx/8; joy.y = dy/8;
         document.getElementById("joy-thumb").style.transform = `translate(${dx}px, ${dy}px)`;
     });
+    window.addEventListener("touchend", () => { joy.active = false; joy.x = 0; joy.y = 0; document.getElementById("joy-thumb").style.transform = `translate(0,0)`; });
 
-    window.addEventListener("touchend", () => {
-        move.active = false; move.x = 0; move.y = 0;
-        document.getElementById("joy-thumb").style.transform = `translate(0,0)`;
-    });
-
-    // زر الإطلاق
     document.getElementById("fire-btn").addEventListener("touchstart", (e) => {
         e.preventDefault();
-        bullets.push({x: player.x, y: player.y, vx: move.x*5 || 10, vy: move.y*5 || 0});
+        bullets.push({x: player.x, y: player.y, vx: joy.x*5 || 15, vy: joy.y*5 || 0});
+        // اهتزاز بسيط عند الإطلاق
+        window.navigator.vibrate?.(20);
     });
 
-    function update() {
-        if(gameState !== "PLAYING") return;
+    function loop() {
+        if(!playing) return;
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        player.x += joy.x; player.y += joy.y;
+
+        // الخلفية (شبكة نيون)
+        ctx.fillStyle = "#050505"; ctx.fillRect(0,0,canvas.width, canvas.height);
         
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        player.x += move.x;
-        player.y += move.y;
-
-        ctx.fillStyle = "#111";
-        ctx.fillRect(0,0,canvas.width, canvas.height);
-
         ctx.save();
         ctx.translate(canvas.width/2 - player.x, canvas.height/2 - player.y);
 
-        // رسم اللاعب
-        ctx.fillStyle = "#3498db";
-        ctx.fillRect(player.x-20, player.y-20, 40, 40);
+        // رسم الأرضية (Grid)
+        ctx.strokeStyle = "#111";
+        for(let i=0; i<3000; i+=100) {
+            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 3000); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(3000, i); ctx.stroke();
+        }
 
-        // الأعداء
-        enemies.forEach(en => {
-            const d = Math.hypot(player.x - en.x, player.y - en.y);
-            en.x += (player.x - en.x)/d * 2;
-            en.y += (player.y - en.y)/d * 2;
-            ctx.fillStyle = "red"; ctx.fillRect(en.x-15, en.y-15, 30, 30);
-            if(d < 30) { 
-                player.hp -= 0.5; 
-                document.getElementById("hp-fill").style.width = player.hp + "%";
+        // الأعداء (شكل هجومي)
+        enemies.forEach((en, index) => {
+            let d = Math.hypot(player.x - en.x, player.y - en.y);
+            en.x += (player.x - en.x)/d * 2.5;
+            en.y += (player.y - en.y)/d * 2.5;
+            
+            ctx.fillStyle = "#ff0044";
+            ctx.shadowBlur = 15; ctx.shadowColor = "#ff0044";
+            ctx.fillRect(en.x-15, en.y-15, 30, 30);
+            
+            if(d < 35) {
+                player.hp -= 0.5;
+                document.getElementById("hp-bar").style.width = player.hp + "%";
             }
+
+            // اصطدام الرصاص بالأعداء
+            bullets.forEach((b, bi) => {
+                if(Math.hypot(b.x - en.x, b.y - en.y) < 30) {
+                    enemies.splice(index, 1);
+                    bullets.splice(bi, 1);
+                    enemies.push({x: Math.random()*3000, y: Math.random()*3000}); // وحش جديد
+                }
+            });
         });
 
-        // الرصاص
-        bullets.forEach((b, i) => {
+        // الرصاص (ليزر)
+        bullets.forEach(b => {
             b.x += b.vx; b.y += b.vy;
-            ctx.fillStyle = "yellow"; ctx.fillRect(b.x, b.y, 8, 8);
+            ctx.fillStyle = var(--neon-blue);
+            ctx.shadowBlur = 10; ctx.fillRect(b.x, b.y, 20, 4);
         });
+
+        // اللاعب (روبوت نيون)
+        ctx.fillStyle = var(--neon-blue);
+        ctx.shadowBlur = 20; ctx.shadowColor = var(--neon-blue);
+        ctx.fillRect(player.x-20, player.y-20, 40, 40);
+        ctx.strokeStyle = "#fff"; ctx.strokeRect(player.x-20, player.y-20, 40, 40);
 
         ctx.restore();
-
-        if(player.hp <= 0) { alert("Game Over!"); location.reload(); }
-        requestAnimationFrame(update);
+        if(player.hp <= 0) location.reload();
+        requestAnimationFrame(loop);
     }
 </script>
 </body>
