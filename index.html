@@ -3,32 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BATTLE PRO MAX - THE VAULT</title>
+    <title>BATTLE PRO - REDEEM CENTER</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root { --gold: #f1c40f; --neon: #00f3ff; }
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; touch-action: none; color: white; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; touch-action: none; color: white; }
         
         /* واجهة اللوبي */
         #lobby-ui { position: fixed; width: 100%; height: 100%; background: radial-gradient(circle at center, transparent, #000); z-index: 10; display: flex; flex-direction: column; justify-content: space-between; }
         .top-bar { display: flex; justify-content: flex-end; gap: 15px; padding: 15px; }
-        .currency { background: rgba(0,0,0,0.8); padding: 5px 15px; border-radius: 20px; border: 1px solid var(--gold); font-size: 14px; color: var(--gold); }
+        .currency { background: rgba(0,0,0,0.8); padding: 5px 15px; border-radius: 20px; border: 1px solid var(--gold); color: var(--gold); font-weight: bold; }
         
-        /* القائمة الجانبية (الخزنة والمتجر) */
+        /* الأزرار الجانبية */
         .side-menu { position: absolute; left: 15px; top: 100px; display: flex; flex-direction: column; gap: 10px; }
-        .btn-side { width: 65px; height: 65px; background: rgba(0,0,0,0.7); border: 2px solid white; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-direction: column; font-size: 10px; cursor: pointer; }
+        .btn-side { width: 65px; height: 65px; background: rgba(0,0,0,0.7); border: 2px solid white; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-direction: column; font-size: 10px; cursor: pointer; text-align: center; }
 
-        /* نافذة الخزنة (Vault) */
-        #vault-window { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; height: 80%; background: rgba(10,10,25,0.95); border: 2px solid var(--neon); z-index: 100; border-radius: 15px; padding: 20px; overflow-y: auto; }
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
-        .skin-card { background: #1a1a2e; border: 1px solid #333; padding: 10px; border-radius: 8px; text-align: center; }
-        .skin-card img { width: 100%; border-radius: 5px; }
+        /* نافذة شحن الأكواد (مجنونة) */
+        #redeem-win { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; height: 60%; background: linear-gradient(135deg, #1a1a2e, #000); border: 2px solid var(--neon); z-index: 100; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 0 30px var(--neon); }
+        #code-input { width: 80%; padding: 15px; margin: 20px 0; border-radius: 5px; border: 1px solid var(--neon); background: #000; color: white; text-align: center; font-size: 20px; letter-spacing: 5px; }
+        .redeem-btn { background: var(--neon); color: black; border: none; padding: 15px 40px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 18px; }
 
-        /* أزرار الرقصات أثناء اللعب */
-        #emote-menu { position: fixed; right: 10px; top: 100px; display: none; flex-direction: column; gap: 5px; z-index: 30; }
-        .emote-btn { width: 50px; height: 50px; background: rgba(0,0,0,0.5); border: 1px solid var(--gold); border-radius: 50%; font-size: 20px; pointer-events: auto; }
-
-        /* التحكم */
+        /* واجهة الجيم */
         #game-ui { display: none; position: fixed; width: 100%; height: 100%; z-index: 20; pointer-events: none; }
         #joystick { position: absolute; left: 40px; bottom: 40px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; border: 2px solid white; pointer-events: auto; }
         #stick { position: absolute; left: 35px; top: 35px; width: 50px; height: 50px; background: white; border-radius: 50%; }
@@ -41,103 +36,110 @@
 
 <div id="lobby-ui">
     <div class="top-bar">
-        <div class="currency">💎 <span id="gems">9999</span></div>
-        <div class="currency">💰 <span id="coins">50000</span></div>
+        <div class="currency">💎 <span id="gems-val">101</span></div>
+        <div class="currency">💰 <span id="coins-val">51282</span></div>
     </div>
     <div class="side-menu">
-        <div class="btn-side" onclick="toggleVault()">📦<br>الخزنة</div>
-        <div class="btn-side" onclick="alert('المتجر مليء بالسكنات!')">🛒<br>المتجر</div>
+        <div class="btn-side" onclick="toggleWin('redeem-win')">🎁<br>شحن الأكواد</div>
+        <div class="btn-side" onclick="alert('المتجر يفتح غداً!')">🛒<br>المتجر</div>
     </div>
     <button class="start-btn" onclick="startGame()">START</button>
 </div>
 
-<div id="vault-window">
-    <h2 style="color:var(--neon)">خزنة الملابس والرقصات</h2>
-    <div class="grid">
-        <div class="skin-card" onclick="changeSkin(0xff0000)">🔴<br>سكن أحمر</div>
-        <div class="skin-card" onclick="changeSkin(0x00f3ff)">🔵<br>سكن نيون</div>
-        <div class="skin-card" onclick="changeSkin(0xf1c40f)">🟡<br>سكن ذهبي</div>
-        <div class="skin-card" onclick="playEmote('dance')">🕺<br>رقصة 1</div>
-        <div class="skin-card" onclick="playEmote('jump')">🦘<br>قفزة</div>
-    </div>
-    <button onclick="toggleVault()" style="margin-top:20px; width:100%; padding:10px; background:var(--gold); border:none; font-weight:bold;">إغلاق</button>
+<div id="redeem-win">
+    <h2 style="color:var(--neon)">مركز استبدال الأكواد</h2>
+    <p>ادخل الكود السري لشحن الجواهر مجاناً</p>
+    <input type="text" id="code-input" placeholder="XXXX-XXXX" maxlength="12">
+    <br>
+    <button class="redeem-btn" onclick="redeemNow()">شحن الجواهر 💎</button>
+    <button onclick="toggleWin('redeem-win')" style="display:block; width:100%; margin-top:20px; background:none; color:white; border:none; cursor:pointer;">إغلاق</button>
 </div>
 
 <div id="game-ui">
-    <div id="emote-menu">
-        <button class="emote-btn" onclick="playEmote('dance')">🕺</button>
-        <button class="emote-btn" onclick="playEmote('jump')">🦘</button>
-    </div>
     <div id="joystick"><div id="stick"></div></div>
     <div id="fire-btn">🔫</div>
 </div>
 
 <script>
+    let gems = 101;
+    let coins = 51282;
     let inGame = false;
     let moveDir = { x: 0, z: 0 };
+
+    // الأكواد المسموح بها (يمكنك إضافة المزيد)
+    const validCodes = {
+        "FREE2026": 500,
+        "GIFT-100": 100,
+        "MOHAMMAD": 1000
+    };
+
+    // إعداد المحرك 3D
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x050510);
+    scene.background = new THREE.Color(0x020205);
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(5, 10, 5);
+    scene.add(new THREE.AmbientLight(0xffffff, 1));
+    const light = new THREE.PointLight(0xffffff, 2);
+    light.position.set(5, 5, 5);
     scene.add(light);
 
-    // الأرضية
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshPhongMaterial({color: 0x111122}));
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshPhongMaterial({color: 0x111111}));
     floor.rotation.x = -Math.PI / 2;
     scene.add(floor);
 
-    // إضافة 300 غرض في الخريطة
+    // إضافة 300 غرض
     for(let i=0; i<300; i++){
-        let x = Math.random()*800-400;
-        let z = Math.random()*800-400;
-        let h = Math.random()*5 + 1;
-        const obj = new THREE.Mesh(new THREE.BoxGeometry(2, h, 2), new THREE.MeshPhongMaterial({color: Math.random()*0xffffff}));
-        obj.position.set(x, h/2, z);
-        scene.add(obj);
+        const x = Math.random()*600-300;
+        const z = Math.random()*600-300;
+        const h = Math.random()*4+1;
+        const box = new THREE.Mesh(new THREE.BoxGeometry(1, h, 1), new THREE.MeshPhongMaterial({color: Math.random()*0xffffff}));
+        box.position.set(x, h/2, z);
+        scene.add(box);
     }
 
-    // الشخصية (سكن مطور)
+    // الشخصية
     const playerGroup = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.5, 1.2, 4, 12), new THREE.MeshPhongMaterial({color: 0x00f3ff}));
-    body.position.y = 1.1;
+    const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.5, 1, 4, 8), new THREE.MeshPhongMaterial({color: 0x00ff00}));
+    body.position.y = 1;
     playerGroup.add(body);
     scene.add(playerGroup);
 
     camera.position.set(0, 5, 10);
 
-    function toggleVault() {
-        let v = document.getElementById('vault-window');
-        v.style.display = v.style.display === 'block' ? 'none' : 'block';
+    function toggleWin(id) {
+        const w = document.getElementById(id);
+        w.style.display = w.style.display === 'block' ? 'none' : 'block';
     }
 
-    function changeSkin(color) {
-        body.material.color.setHex(color);
-        alert("تم تغيير السكن بنجاح!");
-    }
-
-    function playEmote(type) {
-        if(type === 'dance') playerGroup.rotation.y += Math.PI * 2;
-        if(type === 'jump') {
-            let startY = playerGroup.position.y;
-            playerGroup.position.y += 2;
-            setTimeout(() => playerGroup.position.y = startY, 300);
+    function redeemNow() {
+        const code = document.getElementById('code-input').value.toUpperCase();
+        if (validCodes[code]) {
+            const amount = validCodes[code];
+            gems += amount;
+            updateUI();
+            alert(`🎉 مبروك! تم شحن ${amount} جوهرة بنجاح!`);
+            document.getElementById('code-input').value = "";
+            toggleWin('redeem-win');
+        } else {
+            alert("❌ الكود غير صحيح أو منتهي الصلاحية!");
         }
+    }
+
+    function updateUI() {
+        document.getElementById('gems-val').innerText = gems;
+        document.getElementById('coins-val').innerText = coins;
     }
 
     function startGame() {
         document.getElementById('lobby-ui').style.display = 'none';
         document.getElementById('game-ui').style.display = 'block';
-        document.getElementById('emote-menu').style.display = 'flex';
         inGame = true;
     }
 
-    // نظام الحركة المطور
+    // التحكم
     const joystick = document.getElementById('joystick');
     const stick = document.getElementById('stick');
     joystick.addEventListener('touchmove', (e) => {
@@ -160,9 +162,9 @@
     function animate() {
         requestAnimationFrame(animate);
         if (inGame) {
-            playerGroup.position.x += moveDir.x * 0.4;
-            playerGroup.position.z += moveDir.z * 0.4;
-            camera.position.lerp(new THREE.Vector3(playerGroup.position.x, 6, playerGroup.position.z + 12), 0.1);
+            playerGroup.position.x += moveDir.x * 0.3;
+            playerGroup.position.z += moveDir.z * 0.3;
+            camera.position.lerp(new THREE.Vector3(playerGroup.position.x, 6, playerGroup.position.z + 10), 0.1);
             camera.lookAt(playerGroup.position);
         } else {
             playerGroup.rotation.y += 0.01;
